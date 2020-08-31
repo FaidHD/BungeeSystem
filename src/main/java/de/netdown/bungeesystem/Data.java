@@ -4,7 +4,7 @@ public class Data {
 
     private BungeeSystem plugin;
 
-    private String prefix = "§8┃ §aBungee §8● §7";
+    private String prefix = "§8┃ §3Net§fDown §8● §7";
     private String noPerm = prefix + "Dazu hast du keine Rechte.";
 
 

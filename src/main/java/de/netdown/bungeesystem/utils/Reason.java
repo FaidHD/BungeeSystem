@@ -18,6 +18,10 @@ public class Reason {
         this.canSupBan = canSupBan;
     }
 
+    public int getHalfTime() {
+        return seconds/2;
+    }
+
     public String getReason() {
         return reason;
     }
