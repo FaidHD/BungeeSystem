@@ -45,6 +45,7 @@ public class UnbanCommand extends Command {
             if (args.length == 1) {
                 BanManager manager = plugin.getBanManager();
                 UUID uuid = UUIDFetcher.getUUID(args[0]);
+                System.out.println(uuid.toString());
                 if (uuid != null) {
                     if (manager.isBanned(uuid)) {
                         manager.unBan(uuid);

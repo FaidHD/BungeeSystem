@@ -1,6 +1,7 @@
 package de.netdown.bungeesystem.utils;
 
 import de.netdown.bungeesystem.BungeeSystem;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.config.Configuration;
@@ -33,32 +34,31 @@ public class BanManager {
         this.reasons = new ArrayList<>();
         toManyBanPoints = new Reason("ZU VIELE BANS", 0, 0, 0, Reason.ReasonType.BAN, false);
         toManyMutePoints = new Reason("ZU VIELE MUTES", 0, 0, 0, Reason.ReasonType.MUTE, false);
+        setupMySQL();
         initReasons();
-        initMySQL();
     }
 
     private void initReasons() {
         reasons.add(new Reason("HACKING", 2592000, 1, 3, Reason.ReasonType.BAN, true));
         reasons.add(new Reason("TROLLING", 604800, 2, 1, Reason.ReasonType.BAN, true));
         reasons.add(new Reason("SKIN", 3600, 3, 1, Reason.ReasonType.BAN, true));
-        reasons.add(new Reason("BUILDING", 259200, 1, 4, Reason.ReasonType.BAN, true));
-        reasons.add(new Reason("NAME", 259200, 1, 5, Reason.ReasonType.BAN, true));
-        reasons.add(new Reason("BUGUSING", 604800, 6, 2, Reason.ReasonType.BAN, true));
+        reasons.add(new Reason("BUILDING", 259200, 4, 2, Reason.ReasonType.BAN, true));
+        reasons.add(new Reason("NAME", 259200, 5, 2, Reason.ReasonType.BAN, true));
+        reasons.add(new Reason("BUGUSING", 604800, 6, 3, Reason.ReasonType.BAN, true));
         reasons.add(new Reason("RECHTSEXTREMISMUS", 0, 7, 10, Reason.ReasonType.BAN, false));
         reasons.add(new Reason("VIRTUELLES HAUSVERBOT", 0, 8, 5, Reason.ReasonType.BAN, false));
 
-        reasons.add(new Reason("BELEIDIGUNG", 3600, 9, 1, Reason.ReasonType.MUTE, true));
+        reasons.add(new Reason("BELEIDIGUNG", 3600, 9, 2, Reason.ReasonType.MUTE, true));
         reasons.add(new Reason("WERBUNG", 3600 * 24, 10, 3, Reason.ReasonType.MUTE, true));
     }
 
-    private void initMySQL() {
+    private void setupMySQL() {
         file = new File(plugin.getDataFolder(), "mysql.yml");
         try {
             if (!plugin.getDataFolder().exists())
                 plugin.getDataFolder().mkdir();
             if (!file.exists()) {
                 file.createNewFile();
-                cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
                 cfg.set("Hostname", "localhost");
                 cfg.set("Port", "3306");
                 cfg.set("Database", "database");
@@ -66,6 +66,7 @@ public class BanManager {
                 cfg.set("Password", "password");
                 ConfigurationProvider.getProvider(YamlConfiguration.class).save(cfg, file);
             }
+            cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -103,10 +104,10 @@ public class BanManager {
     }
 
     public int[] getBanTime(UUID uuid) {
-        long current = System.currentTimeMillis();
         long end = getRemainingBanTime(uuid);
         if (end == 0)
             return null;
+        long current = System.currentTimeMillis();
         long millis = end - current;
         int seconds = 0;
         while (millis > 1000L) {
@@ -133,7 +134,7 @@ public class BanManager {
     public String getTimeAsString(int[] time) {
         if (time == null)
             return "§bPERMANENT";
-        return "§b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Woche §b") : (time[1] + " §7Wochen §b")) + (time[2] == 1 ? (time[2] + " §7Woche §b") : (time[2] + " §7Wochen §b")) + (time[3] == 1 ? (time[3] + " §7Woche §b") : (time[3] + " §7Wochen §b")) + (time[4] == 1 ? (time[4] + " §7Woche §b") : (time[4] + " §7Wochen §b"));
+        return "§b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Tag §b") : (time[1] + " §7Tage §b")) + (time[2] == 1 ? (time[2] + " §7Stunde §b") : (time[2] + " §7Stunden §b")) + (time[3] == 1 ? (time[3] + " §7Minute §b") : (time[3] + " §7Minuten §b")) + (time[4] == 1 ? (time[4] + " §7Sekunde §b") : (time[4] + " §7Sekunden §b"));
     }
 
     public int getBanCount(UUID uuid) {
@@ -142,7 +143,7 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "BAN")
+                if (rs.getString("TYPE").matches("BAN"))
                     bans++;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -157,7 +158,7 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "MUTE")
+                if (rs.getString("TYPE").matches("MUTE"))
                     bans++;
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -167,7 +168,7 @@ public class BanManager {
     }
 
     public String[][] getBanHistoryFromPlayer(UUID uuid) {
-        ResultSet rs = mySQL.query("SELECT * FROM history WHERE UUID='" + uuid + "'");
+        ResultSet rs = mySQL.query("SELECT * FROM history WHERE UUID='" + uuid.toString() + "'");
         int banCount = getBanCount(uuid);
         if (banCount == 0)
             return null;
@@ -176,7 +177,7 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "BAN") {
+                if (rs.getString("TYPE").matches("BAN")) {
                     String[] ban = new String[3];
                     ban[0] = rs.getString("REASON");
                     ban[1] = rs.getString("POINTS");
@@ -192,8 +193,8 @@ public class BanManager {
     }
 
     public String[][] getMuteHistoryFromPlayer(UUID uuid) {
-        ResultSet rs = mySQL.query("SELECT * FROM history WHERE UUID='" + uuid + "'");
-        int banCount = getBanCount(uuid);
+        ResultSet rs = mySQL.query("SELECT * FROM history WHERE UUID='" + uuid.toString() + "'");
+        int banCount = getMuteCount(uuid);
         if (banCount == 0)
             return null;
         String[][] bans = new String[banCount][];
@@ -201,7 +202,7 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "MUTE") {
+                if (rs.getString("TYPE").matches("MUTE")) {
                     String[] ban = new String[3];
                     ban[0] = rs.getString("REASON");
                     ban[1] = rs.getString("POINTS");
@@ -221,45 +222,39 @@ public class BanManager {
      * @return first are weeks than days than hours etc.
      */
     public int[] secondsToArray(int seconds) {
+        if (seconds == 0)
+            return null;
         int[] time = new int[5];
+        int sec = seconds;
         int minutes = 0;
         int hours = 0;
         int days = 0;
         int weeks = 0;
-        while (seconds > 60L) {
-            seconds -= 60L;
+
+        while (sec >= 60) {
+            sec -= 60;
             minutes++;
         }
-        while (minutes > 60L) {
-            minutes -= 60L;
+        while (minutes >= 60) {
+            minutes -= 60;
             hours++;
         }
-        while (hours > 24L) {
-            hours -= 24L;
+        while (hours >= 24) {
+            hours -= 24;
             days++;
         }
-        while (days > 7L) {
-            days -= 7L;
+        while (days >= 7) {
+            days -= 7;
             weeks++;
         }
+
+
         time[0] = weeks;
         time[1] = days;
         time[2] = hours;
         time[3] = minutes;
-        time[4] = seconds;
+        time[4] = sec;
         return time;
-    }
-
-    public boolean isBanned(ProxiedPlayer player) {
-        String uuid = player.getUniqueId().toString();
-        ResultSet rs = mySQL.query("SELECT * FROM bans WHERE UUID='" + uuid + "'");
-        try {
-            if (rs.next())
-                return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     public boolean isBanned(UUID uuid) {
@@ -275,18 +270,6 @@ public class BanManager {
 
     public boolean isBannedIP(String ipAddress) {
         ResultSet rs = mySQL.query("SELECT * FROM bans WHERE IPADDRESS='" + ipAddress + "'");
-        try {
-            if (rs.next())
-                return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean isMuted(ProxiedPlayer player) {
-        String uuid = player.getUniqueId().toString();
-        ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid + "'");
         try {
             if (rs.next())
                 return true;
@@ -335,13 +318,13 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "BAN")
-                    i += rs.getInt("POINTS");
+                if (rs.getString("TYPE").matches("BAN"))
+                    i += Integer.parseInt(rs.getString("POINTS"));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return i;
     }
 
     public int getMutePoints(UUID uuid) {
@@ -350,13 +333,13 @@ public class BanManager {
         while (true) {
             try {
                 if (!rs.next()) break;
-                if (rs.getString("TYPE") == "MUTE")
-                    i += rs.getInt("POINTS");
+                if (rs.getString("TYPE").matches("MUTE"))
+                    i += Integer.parseInt(rs.getString("POINTS"));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
-        return 0;
+        return i;
     }
 
     public String getBanReason(UUID uuid) {
@@ -383,21 +366,30 @@ public class BanManager {
 
     public void checkBanPoints(UUID uuid) {
         if (getBanPoints(uuid) < 10) return;
+        if(getMuteReason(uuid).matches("ZU VIELE BANS")) return;
         unBan(uuid);
         banOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyBanPoints);
     }
 
     public void checkMutePoints(UUID uuid) {
         if (getMutePoints(uuid) < 10) return;
-        unBan(uuid);
-        banOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyMutePoints);
+        if(getMuteReason(uuid).matches("ZU VIELE MUTES")) return;
+        unMute(uuid);
+        if (ProxyServer.getInstance().getPlayer(uuid) == null)
+            muteOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyMutePoints);
+        else
+            mutePlayerByConsole(ProxyServer.getInstance().getPlayer(uuid), toManyMutePoints);
     }
 
     private void banPlayer(String name, UUID uuid, String ip, int seconds, String reason, String judgeName, String judgeUUID, int banPoints) {
-        long end = System.currentTimeMillis() + seconds * 1000;
+        long sec = seconds;
+        long end = System.currentTimeMillis() + sec * 1000;
+        if (seconds == 0)
+            end = 0;
         mySQL.update("INSERT INTO bans(PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         mySQL.update("INSERT INTO history(PLAYERNAME, UUID, IPADDRESS, TYPE, ENDING, REASON, POINTS, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', 'BAN', '" + end + "', '" + reason + "', '" + banPoints + "', '" + judgeName + "', '" + judgeUUID + "')");
-        checkBanPoints(uuid);
+        if (!reason.matches("RECHTSEXTREMISMUS") && !reason.matches("VIRTUELLES HAUSVERBOT"))
+            checkBanPoints(uuid);
     }
 
     public void banPlayerByPlayer(ProxiedPlayer player, ProxiedPlayer judge, Reason reason) {
@@ -429,24 +421,27 @@ public class BanManager {
     }
 
     public void unBan(UUID uuid) {
-        mySQL.update("DELETE FROM mutes WHERE UUID='" + uuid.toString() + "'");
+        mySQL.update("DELETE FROM bans WHERE UUID='" + uuid.toString() + "'");
     }
 
     private void mutePlayer(String name, UUID uuid, String ip, int seconds, String reason, String judgeName, String judgeUUID, int mutePoints) {
-        long end = System.currentTimeMillis() + seconds * 1000;
+        long sec = seconds;
+        long end = System.currentTimeMillis() + sec * 1000;
+        if (seconds == 0)
+            end = 0;
         mySQL.update("INSERT INTO mutes(PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         mySQL.update("INSERT INTO history(PLAYERNAME, UUID, IPADDRESS, TYPE, ENDING, REASON, POINTS, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', 'MUTE', '" + end + "', '" + reason + "', '" + mutePoints + "', '" + judgeName + "', '" + judgeUUID + "')");
         checkMutePoints(uuid);
     }
 
     public void mutePlayerByPlayer(ProxiedPlayer player, ProxiedPlayer judge, Reason reason) {
-        mutePlayer(player.getName(), player.getUniqueId(), getIPFromPlayer(player), reason.getSeconds(), reason.getReason(), judge.getName(), judge.getUniqueId().toString(), reason.getPoints());
         player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du wurdest wegen §b" + reason.getReason() + " §7gemutet."));
         int[] time = secondsToArray(reason.getSeconds());
         if (time != null)
-            player.sendMessage(new TextComponent("§8➥ §7Länge §8» §b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Tag §b") : (time[1] + " §7Tage §b")) + (time[2] == 1 ? (time[2] + " §7Stunde §b") : (time[2] + " §7Stunden §b")) + (time[3] == 1 ? (time[3] + " §7Minute §b") : (time[3] + " §7Minuten §b")) + (time[4] == 1 ? (time[4] + " §7Sekunde §b") : (time[4] + " §7Sekunden §b"))));
+            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» §b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Tag §b") : (time[1] + " §7Tage §b")) + (time[2] == 1 ? (time[2] + " §7Stunde §b") : (time[2] + " §7Stunden §b")) + (time[3] == 1 ? (time[3] + " §7Minute §b") : (time[3] + " §7Minuten §b")) + (time[4] == 1 ? (time[4] + " §7Sekunde §b") : (time[4] + " §7Sekunden §b"))));
         else
-            player.disconnect(new TextComponent("§8➥ §7Länge §8» §bPERMANENT"));
+            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» §bPERMANENT"));
+        mutePlayer(player.getName(), player.getUniqueId(), getIPFromPlayer(player), reason.getSeconds(), reason.getReason(), judge.getName(), judge.getUniqueId().toString(), reason.getPoints());
     }
 
     public void muteOfflinePlayerByPlayer(String playerName, ProxiedPlayer judge, Reason reason) {
@@ -455,13 +450,13 @@ public class BanManager {
     }
 
     public void mutePlayerByConsole(ProxiedPlayer player, Reason reason) {
-        mutePlayer(player.getName(), player.getUniqueId(), getIPFromPlayer(player), reason.getSeconds(), reason.getReason(), "CONSOLE", "CONSOLE", reason.getPoints());
         int[] time = secondsToArray(reason.getSeconds());
         player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du wurdest wegen §b" + reason.getReason() + " §7gemutet."));
         if (time != null)
-            player.sendMessage(new TextComponent("§8➥ §7Länge §8» §b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Tag §b") : (time[1] + " §7Tage §b")) + (time[2] == 1 ? (time[2] + " §7Stunde §b") : (time[2] + " §7Stunden §b")) + (time[3] == 1 ? (time[3] + " §7Minute §b") : (time[3] + " §7Minuten §b")) + (time[4] == 1 ? (time[4] + " §7Sekunde §b") : (time[4] + " §7Sekunden §b"))));
+            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» §b" + (time[0] == 1 ? (time[0] + " §7Woche §b") : (time[0] + " §7Wochen §b")) + (time[1] == 1 ? (time[1] + " §7Tag §b") : (time[1] + " §7Tage §b")) + (time[2] == 1 ? (time[2] + " §7Stunde §b") : (time[2] + " §7Stunden §b")) + (time[3] == 1 ? (time[3] + " §7Minute §b") : (time[3] + " §7Minuten §b")) + (time[4] == 1 ? (time[4] + " §7Sekunde §b") : (time[4] + " §7Sekunden §b"))));
         else
-            player.disconnect(new TextComponent("§8➥ §7Länge §8» §bPERMANENT"));
+            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» §bPERMANENT"));
+        mutePlayer(player.getName(), player.getUniqueId(), getIPFromPlayer(player), reason.getSeconds(), reason.getReason(), "CONSOLE", "CONSOLE", reason.getPoints());
     }
 
     public void muteOfflinePlayerByConsole(String playerName, Reason reason) {

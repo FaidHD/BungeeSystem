@@ -4,9 +4,11 @@ import de.netdown.bungeesystem.BungeeSystem;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+
+import java.util.UUID;
 
 public class PostLoginListener implements Listener {
 
@@ -18,17 +20,24 @@ public class PostLoginListener implements Listener {
     }
 
     @EventHandler
-    public void onPostLogin(PostLoginEvent event) {
-        ProxiedPlayer player = event.getPlayer();
-        if (plugin.getBanManager().isBanned(player)) {
-            int[] time = plugin.getBanManager().getBanTime(player.getUniqueId());
-            player.disconnect(new TextComponent("§3Net§fDown §8● §cDu wurdest gebannt\n\n§8➥ §7Grund §8» §9" + plugin.getBanManager().getBanReason(player.getUniqueId()) + "\n §8➥ §7Länge §8» §b" + plugin.getBanManager().getTimeAsString(time) + "\n\n §7Zu unrecht gebannt? Auf unserem Teamspeak kannst du einen §bEntbannungsantrag stellen§7.\n\n§7Teamspeak §8» §3Net§fDown.de"));
-        } else if (plugin.getBanManager().isBannedIP(plugin.getBanManager().getIPFromPlayer(player))) {
-            int[] time = plugin.getBanManager().getBanTime(player.getUniqueId());
-            if (time != null)
-                player.disconnect(new TextComponent("§3Net§fDown §8● §cDeine IP-Adresse ist gebannt\n\n§8➥ §7Grund §8» §9" + plugin.getBanManager().getBanReason(player.getUniqueId()) + "\n §8➥ §7Länge §8» " + plugin.getBanManager().getTimeAsString(time) + "\n\n §7Zu unrecht gebannt? Auf unserem Teamspeak kannst du einen §bEntbannungsantrag stellen§7.\n\n§7Teamspeak §8» §3Net§fDown.de"));
-            else
-                player.disconnect(new TextComponent("§3Net§fDown §8● §cDeine IP-Adresse ist gebannt\n\n§8➥ §7Grund §8» §9" + plugin.getBanManager().getBanReason(player.getUniqueId()) + "\n §8➥ §7Länge §8» §bPERMANENT\n\n §7Zu unrecht gebannt? Auf unserem Teamspeak kannst du einen §bEntbannungsantrag stellen§7.\n\n§7Teamspeak §8» §3Net§fDown.de"));
+    public void onLogin(LoginEvent event) {
+        UUID uuid = event.getConnection().getUniqueId();
+        System.out.println(uuid.toString());
+        if (plugin.getBanManager().isBanned(uuid)) {
+            long remainingTime = plugin.getBanManager().getRemainingBanTime(uuid);
+            if (remainingTime <= System.currentTimeMillis()) {
+                if (remainingTime != 0) {
+                    plugin.getBanManager().unBan(uuid);
+                    for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
+                        if (all.hasPermission("bungee.ban")) {
+                            all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + event.getConnection().getName() + " §7wurde automatisch wegen Ablauf des Banns entbannt."));
+                        }
+                    return;
+                }
+            }
+            int[] time = plugin.getBanManager().getBanTime(uuid);
+            event.setCancelReason(new TextComponent("§3Net§fDown §8● §cDu wurdest gebannt\n\n§8➥ §7Grund §8» §9" + plugin.getBanManager().getBanReason(uuid) + "\n §8➥ §7Länge §8» §b" + plugin.getBanManager().getTimeAsString(time) + "\n\n §7Zu unrecht gebannt? Auf unserem Teamspeak kannst du einen §bEntbannungsantrag stellen§7.\n\n§7Teamspeak §8» §3Net§fDown.de"));
+            event.setCancelled(true);
         }
     }
 }

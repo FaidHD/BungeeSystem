@@ -10,6 +10,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
+import javax.swing.*;
 import java.util.UUID;
 
 public class BanCommand extends Command {
@@ -31,7 +32,7 @@ public class BanCommand extends Command {
                     try {
                         BanManager manager = plugin.getBanManager();
                         Reason reason = manager.getReasonTemplate(Integer.parseInt(args[1]));
-                        if (!reason.isCanSupBan() && player.hasPermission("bungee.ban.all")) {
+                        if (!reason.isCanSupBan() || player.hasPermission("bungee.ban.all")) {
                             ProxiedPlayer target = ProxyServer.getInstance().getPlayer(args[0]);
                             if (target != null) {
                                 if (reason.getReasonType() == Reason.ReasonType.BAN) {
@@ -42,7 +43,6 @@ public class BanCommand extends Command {
                                     if (manager.isMuted(target.getUniqueId()))
                                         manager.unMute(target.getUniqueId());
                                     manager.mutePlayerByPlayer(target, player, reason);
-                                    target.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du wurdest wegen §b" + reason.getReason() + " §7gemutet."));
                                 }
                                 int[] time = manager.secondsToArray(reason.getSeconds());
                                 for (ProxiedPlayer a : ProxyServer.getInstance().getPlayers()) {
@@ -51,9 +51,9 @@ public class BanCommand extends Command {
                                             a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + target.getName() + " §7wurde gebannt."));
                                         else
                                             a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + target.getName() + " §7wurde gemutet."));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Grund §8» §b" + reason.getReason()));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» " + manager.getTimeAsString(time)));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Von §8» §b" + player.getName()));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Grund §8» §b" + reason.getReason()));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Länge §8» " + manager.getTimeAsString(time)));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Von §8» §b" + player.getName()));
                                     }
                                 }
                             } else {
@@ -78,9 +78,9 @@ public class BanCommand extends Command {
                                             a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gebannt."));
                                         else
                                             a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gemutet."));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Grund §8» §b" + reason.getReason()));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» " + manager.getTimeAsString(time)));
-                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Von §8» §b" + player.getName()));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Grund §8» §b" + reason.getReason()));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Länge §8» " + manager.getTimeAsString(time)));
+                                        a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Von §8» §b" + player.getName()));
                                     }
                                 }
                             }
@@ -115,9 +115,9 @@ public class BanCommand extends Command {
                                 a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + target.getName() + " §7wurde gebannt."));
                             else
                                 a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + target.getName() + " §7wurde gemutet."));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Grund §8» §b" + reason.getReason()));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» " + manager.getTimeAsString(time)));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Von §8» §bCONSOLE"));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Grund §8» §b" + reason.getReason()));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Länge §8» " + manager.getTimeAsString(time)));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Von §8» §bCONSOLE"));
                         }
                     }
                 } else {
@@ -142,9 +142,9 @@ public class BanCommand extends Command {
                                 a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gebannt."));
                             else
                                 a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gemutet."));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Grund §8» §b" + reason.getReason()));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Länge §8» " + manager.getTimeAsString(time)));
-                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §7Von §8» §bCONSOLE"));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Grund §8» §b" + reason.getReason()));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Länge §8» " + manager.getTimeAsString(time)));
+                            a.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §7Von §8» §bCONSOLE"));
                         }
                     }
                 }
@@ -158,8 +158,15 @@ public class BanCommand extends Command {
         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /ban <Spieler> <ID>"));
         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Hier die Verfügbaren ID's"));
         for (Reason reason : plugin.getBanManager().getReasons()) {
-            if (!reason.isCanSupBan() && commandSender.hasPermission("bungee.ban.all"))
-                commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "§8➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
+            if (!reason.isCanSupBan() || commandSender.hasPermission("bungee.ban.all"))
+                if (reason.getReasonType() == Reason.ReasonType.BAN)
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
+        }
+        commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Mutes"));
+        for (Reason reason : plugin.getBanManager().getReasons()) {
+            if (!reason.isCanSupBan() || commandSender.hasPermission("bungee.ban.all"))
+                if (reason.getReasonType() == Reason.ReasonType.MUTE)
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
         }
     }
 
