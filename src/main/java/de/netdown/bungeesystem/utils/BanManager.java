@@ -280,7 +280,7 @@ public class BanManager {
     }
 
     public boolean isMuted(UUID uuid) {
-        ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid + "'");
+        ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid.toString() + "'");
         try {
             if (rs.next())
                 return true;

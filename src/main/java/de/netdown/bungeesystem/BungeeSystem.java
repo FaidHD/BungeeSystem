@@ -5,7 +5,7 @@ import de.netdown.bungeesystem.commands.CheckCommand;
 import de.netdown.bungeesystem.commands.UnbanCommand;
 import de.netdown.bungeesystem.commands.UnmuteCommand;
 import de.netdown.bungeesystem.listeners.ChatListener;
-import de.netdown.bungeesystem.listeners.PostLoginListener;
+import de.netdown.bungeesystem.listeners.LoginListener;
 import de.netdown.bungeesystem.utils.BanManager;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -29,7 +29,7 @@ public class BungeeSystem extends Plugin {
     }
 
     private void initListeners() {
-        new PostLoginListener(this);
+        new LoginListener(this);
         new ChatListener(this);
     }
 

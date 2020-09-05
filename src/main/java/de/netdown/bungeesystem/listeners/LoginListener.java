@@ -1,6 +1,9 @@
 package de.netdown.bungeesystem.listeners;
 
 import de.netdown.bungeesystem.BungeeSystem;
+import net.alpenblock.bungeeperms.BungeePerms;
+import net.alpenblock.bungeeperms.BungeePermsAPI;
+import net.alpenblock.bungeeperms.User;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -10,11 +13,11 @@ import net.md_5.bungee.event.EventHandler;
 
 import java.util.UUID;
 
-public class PostLoginListener implements Listener {
+public class LoginListener implements Listener {
 
     private BungeeSystem plugin;
 
-    public PostLoginListener(BungeeSystem plugin) {
+    public LoginListener(BungeeSystem plugin) {
         this.plugin = plugin;
         ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
     }
@@ -22,7 +25,6 @@ public class PostLoginListener implements Listener {
     @EventHandler
     public void onLogin(LoginEvent event) {
         UUID uuid = event.getConnection().getUniqueId();
-        System.out.println(uuid.toString());
         if (plugin.getBanManager().isBanned(uuid)) {
             long remainingTime = plugin.getBanManager().getRemainingBanTime(uuid);
             if (remainingTime <= System.currentTimeMillis()) {

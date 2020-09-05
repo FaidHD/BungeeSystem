@@ -13,6 +13,10 @@
             <id>bungeecord-repo</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
+        <repository>
+            <id>bungeeperms-repo</id>
+            <url>http://repo.wea-ondara.net/repository/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -34,6 +38,11 @@
             <version>1.16-R0.2-SNAPSHOT</version>
             <type>javadoc</type>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.alpenblock</groupId>
+            <artifactId>BungeePerms</artifactId>
+            <version>4.0-dev-108</version>
         </dependency>
     </dependencies>
 
