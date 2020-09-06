@@ -15,6 +15,7 @@ import net.md_5.bungee.api.score.Team;
 import net.md_5.bungee.event.EventHandler;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class LoginListener implements Listener {
 
@@ -23,16 +24,6 @@ public class LoginListener implements Listener {
     public LoginListener(BungeeSystem plugin) {
         this.plugin = plugin;
         ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
-    }
-
-    @EventHandler
-    public void onPostLogin(PostLoginEvent event) {
-        if (!plugin.getTabManager().isUseTab()) return;
-        for (ProxiedPlayer all : plugin.getProxy().getPlayers()) {
-            String header = plugin.getTabManager().getHeader().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
-            String footer = plugin.getTabManager().getFooter().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
-            all.setTabHeader(new TextComponent(header), new TextComponent(footer));
-        }
     }
 
     @EventHandler

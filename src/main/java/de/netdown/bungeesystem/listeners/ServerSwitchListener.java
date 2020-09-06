@@ -3,9 +3,13 @@ package de.netdown.bungeesystem.listeners;
 import de.netdown.bungeesystem.BungeeSystem;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+
+import java.util.concurrent.TimeUnit;
 
 public class ServerSwitchListener implements Listener {
 
@@ -17,11 +21,20 @@ public class ServerSwitchListener implements Listener {
     }
 
     @EventHandler
-    public void onServerSwitch(ServerSwitchEvent event) {
-        ProxiedPlayer player = event.getPlayer();
+    public void onServerConnect(ServerConnectedEvent event) {
         if(!plugin.getTabManager().isUseTab()) return;
-        String header = plugin.getTabManager().getHeader().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", player.getServer().getInfo().getName()).replaceAll("&", "§");
-        String footer = plugin.getTabManager().getFooter().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", player.getServer().getInfo().getName()).replaceAll("&", "§");
-        player.setTabHeader(new TextComponent(header), new TextComponent(footer));
+        plugin.getTabManager().setTabAll();
+    }
+
+    @EventHandler
+    public void onServerDisconnect(ServerDisconnectEvent event) {
+        if(!plugin.getTabManager().isUseTab()) return;
+        plugin.getTabManager().setTabAll();
+    }
+
+    @EventHandler
+    public void onServerSwitch(ServerSwitchEvent event) {
+        if (!plugin.getTabManager().isUseTab()) return;
+        plugin.getTabManager().setTab(event.getPlayer());
     }
 }

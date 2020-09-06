@@ -7,6 +7,8 @@ import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
+import java.util.concurrent.TimeUnit;
+
 public class QuitListener implements Listener {
 
     private BungeeSystem plugin;
@@ -19,11 +21,7 @@ public class QuitListener implements Listener {
     @EventHandler
     public void onQuit(PlayerDisconnectEvent event) {
         if (!plugin.getTabManager().isUseTab()) return;
-        for (ProxiedPlayer all : plugin.getProxy().getPlayers()) {
-            String header = plugin.getTabManager().getHeader().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
-            String footer = plugin.getTabManager().getFooter().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
-            all.setTabHeader(new TextComponent(header), new TextComponent(footer));
-        }
+        plugin.getTabManager().setTabAll();
     }
 
 }

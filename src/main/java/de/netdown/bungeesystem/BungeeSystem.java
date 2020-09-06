@@ -1,9 +1,6 @@
 package de.netdown.bungeesystem;
 
-import de.netdown.bungeesystem.commands.BanCommand;
-import de.netdown.bungeesystem.commands.CheckCommand;
-import de.netdown.bungeesystem.commands.UnbanCommand;
-import de.netdown.bungeesystem.commands.UnmuteCommand;
+import de.netdown.bungeesystem.commands.*;
 import de.netdown.bungeesystem.listeners.ChatListener;
 import de.netdown.bungeesystem.listeners.LoginListener;
 import de.netdown.bungeesystem.listeners.QuitListener;
@@ -31,6 +28,8 @@ public class BungeeSystem extends Plugin {
         new UnbanCommand(this);
         new UnmuteCommand(this);
         new CheckCommand(this);
+        new BroadcastCommand(this);
+        new TeamchatCommand(this);
     }
 
     private void initListeners() {
