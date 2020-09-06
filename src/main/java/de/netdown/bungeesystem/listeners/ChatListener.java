@@ -23,7 +23,6 @@ public class ChatListener implements Listener {
         if (!(event.getSender() instanceof ProxiedPlayer)) return;
         ProxiedPlayer player = (ProxiedPlayer) event.getSender();
         String msg = event.getMessage();
-
         if (msg.charAt(0) != '/' || msg.startsWith("/msg") || msg.startsWith("/tell") || msg.startsWith("/me") || msg.startsWith("/say"))
             if (plugin.getBanManager().isMuted(player.getUniqueId())) {
                 if (plugin.getBanManager().getRemainingMuteTime(player.getUniqueId()) <= System.currentTimeMillis()) {
@@ -36,7 +35,7 @@ public class ChatListener implements Listener {
                     }
                 }
                 event.setCancelled(true);
-                player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du bist wegen §b" + plugin.getBanManager().getMuteReason(player.getUniqueId()) + " §7gemutet und darfst den Chat nicht nutzen."));
+                player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du bist wegen §b" + plugin.getBanManager().getMuteReason(player.getUniqueId()) + " §7gemutet."));
                 player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ Länge §8» " + plugin.getBanManager().getTimeAsString(plugin.getBanManager().getMuteTime(player.getUniqueId()))));
             }
     }

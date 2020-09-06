@@ -8,7 +8,10 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.LoginEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
+import net.md_5.bungee.api.score.Scoreboard;
+import net.md_5.bungee.api.score.Team;
 import net.md_5.bungee.event.EventHandler;
 
 import java.util.UUID;
@@ -20,6 +23,16 @@ public class LoginListener implements Listener {
     public LoginListener(BungeeSystem plugin) {
         this.plugin = plugin;
         ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
+    }
+
+    @EventHandler
+    public void onPostLogin(PostLoginEvent event) {
+        if (!plugin.getTabManager().isUseTab()) return;
+        for (ProxiedPlayer all : plugin.getProxy().getPlayers()) {
+            String header = plugin.getTabManager().getHeader().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
+            String footer = plugin.getTabManager().getFooter().replaceAll("%online%", String.valueOf(plugin.getProxy().getPlayers().size())).replaceAll("%server%", all.getServer().getInfo().getName()).replaceAll("&", "§");
+            all.setTabHeader(new TextComponent(header), new TextComponent(footer));
+        }
     }
 
     @EventHandler

@@ -46,8 +46,8 @@ public class UnmuteCommand extends Command {
                 BanManager manager = plugin.getBanManager();
                 UUID uuid = UUIDFetcher.getUUID(args[0]);
                 if (uuid != null) {
-                    if (manager.isBanned(uuid)) {
-                        manager.unBan(uuid);
+                    if (manager.isMuted(uuid)) {
+                        manager.unMute(uuid);
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + args[0] + " §7entmutet."));
                     } else
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7ist nicht gemutet."));

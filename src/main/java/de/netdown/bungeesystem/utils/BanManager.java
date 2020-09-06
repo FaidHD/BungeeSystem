@@ -57,8 +57,10 @@ public class BanManager {
         try {
             if (!plugin.getDataFolder().exists())
                 plugin.getDataFolder().mkdir();
-            if (!file.exists()) {
+            if (!file.exists())
                 file.createNewFile();
+            cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+            if (!cfg.contains("Hostname")) {
                 cfg.set("Hostname", "localhost");
                 cfg.set("Port", "3306");
                 cfg.set("Database", "database");
@@ -66,7 +68,7 @@ public class BanManager {
                 cfg.set("Password", "password");
                 ConfigurationProvider.getProvider(YamlConfiguration.class).save(cfg, file);
             }
-            cfg = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -280,7 +282,7 @@ public class BanManager {
     }
 
     public boolean isMuted(UUID uuid) {
-        ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid.toString() + "'");
+        ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid + "'");
         try {
             if (rs.next())
                 return true;
@@ -366,14 +368,14 @@ public class BanManager {
 
     public void checkBanPoints(UUID uuid) {
         if (getBanPoints(uuid) < 10) return;
-        if(getMuteReason(uuid).matches("ZU VIELE BANS")) return;
+        if (getMuteReason(uuid).matches("ZU VIELE BANS")) return;
         unBan(uuid);
         banOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyBanPoints);
     }
 
     public void checkMutePoints(UUID uuid) {
         if (getMutePoints(uuid) < 10) return;
-        if(getMuteReason(uuid).matches("ZU VIELE MUTES")) return;
+        if (getMuteReason(uuid).matches("ZU VIELE MUTES")) return;
         unMute(uuid);
         if (ProxyServer.getInstance().getPlayer(uuid) == null)
             muteOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyMutePoints);

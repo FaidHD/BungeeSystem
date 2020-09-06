@@ -59,10 +59,8 @@ public class UUIDFetcher {
             nameCache.put(data.id, data.name);
             return data.id;
         } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
     public static void getName(UUID uuid, Consumer<String> action) {
