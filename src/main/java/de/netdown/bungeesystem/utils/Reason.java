@@ -34,7 +34,7 @@ public class Reason {
         return id;
     }
 
-    public boolean isCanSupBan() {
+    public boolean canSupBan() {
         return canSupBan;
     }
 

@@ -53,7 +53,7 @@ public class CheckCommand extends Command {
                         for (String[] bans : manager.getMuteHistoryFromPlayer(uuid))
                             commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + bans[0] + " §8┃ §7Gemutet von §b" + bans[2] + " §8┃ §b" + bans[1] + " §7Mutepunkte"));
                 } else
-                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler wurde nicht in der Datenbank gefunden."));
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler existiert nicht."));
             } else
                 commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /check <Spieler>"));
         } else

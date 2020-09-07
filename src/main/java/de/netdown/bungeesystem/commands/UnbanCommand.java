@@ -23,29 +23,10 @@ public class UnbanCommand extends Command {
 
     @Override
     public void execute(CommandSender commandSender, String[] args) {
-        if (commandSender instanceof ProxiedPlayer) {
-            ProxiedPlayer player = (ProxiedPlayer) commandSender;
-            if (player.hasPermission("bungee.unban")) {
-                if (args.length == 1) {
-                    BanManager manager = plugin.getBanManager();
-                    UUID uuid = UUIDFetcher.getUUID(args[0]);
-                    if (uuid != null) {
-                        if (manager.isBanned(uuid)) {
-                            manager.unBan(uuid);
-                            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + args[0] + " §7entbannt."));
-                        } else
-                            player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7ist nicht gebannt."));
-                    } else
-                        player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7existiert nicht."));
-                } else
-                    player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unban <Spieler>"));
-            } else
-                player.sendMessage(new TextComponent(plugin.getData().getNoPerm()));
-        } else {
+        if (commandSender.hasPermission("bungee.unban")) {
             if (args.length == 1) {
                 BanManager manager = plugin.getBanManager();
                 UUID uuid = UUIDFetcher.getUUID(args[0]);
-                System.out.println(uuid.toString());
                 if (uuid != null) {
                     if (manager.isBanned(uuid)) {
                         manager.unBan(uuid);
@@ -56,6 +37,7 @@ public class UnbanCommand extends Command {
                     commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7existiert nicht."));
             } else
                 commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unban <Spieler>"));
-        }
+        }else
+            commandSender.sendMessage(new TextComponent(plugin.getData().getNoPerm()));
     }
 }

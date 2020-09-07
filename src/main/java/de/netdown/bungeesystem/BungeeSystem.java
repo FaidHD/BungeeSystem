@@ -1,11 +1,9 @@
 package de.netdown.bungeesystem;
 
 import de.netdown.bungeesystem.commands.*;
-import de.netdown.bungeesystem.listeners.ChatListener;
-import de.netdown.bungeesystem.listeners.LoginListener;
-import de.netdown.bungeesystem.listeners.QuitListener;
-import de.netdown.bungeesystem.listeners.ServerSwitchListener;
+import de.netdown.bungeesystem.listeners.*;
 import de.netdown.bungeesystem.utils.BanManager;
+import de.netdown.bungeesystem.utils.MaintenanceManager;
 import de.netdown.bungeesystem.utils.TabManager;
 import net.md_5.bungee.api.plugin.Plugin;
 
@@ -14,11 +12,13 @@ public class BungeeSystem extends Plugin {
     private Data data;
     private BanManager banManager;
     private TabManager tabManager;
+    private MaintenanceManager maintenanceManager;
 
     public void onEnable() {
         data = new Data(this);
         banManager = new BanManager(this);
         tabManager = new TabManager(this);
+        maintenanceManager = new MaintenanceManager(this);
         initListeners();
         initCommands();
     }
@@ -30,6 +30,7 @@ public class BungeeSystem extends Plugin {
         new CheckCommand(this);
         new BroadcastCommand(this);
         new TeamchatCommand(this);
+        new MaintenanceCommand(this);
     }
 
     private void initListeners() {
@@ -37,6 +38,7 @@ public class BungeeSystem extends Plugin {
         new ChatListener(this);
         new QuitListener(this);
         new ServerSwitchListener(this);
+        new ProxyPingListener(this);
     }
 
     public Data getData() {
@@ -49,5 +51,9 @@ public class BungeeSystem extends Plugin {
 
     public TabManager getTabManager() {
         return tabManager;
+    }
+
+    public MaintenanceManager getMaintenanceManager() {
+        return maintenanceManager;
     }
 }

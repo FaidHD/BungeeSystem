@@ -1,16 +1,15 @@
 package de.netdown.bungeesystem.commands;
 
 import de.netdown.bungeesystem.BungeeSystem;
-import de.netdown.bungeesystem.utils.BanManager;
 import de.netdown.bungeesystem.utils.Reason;
 import de.netdown.bungeesystem.utils.UUIDFetcher;
+import me.philipsnostrum.bungeepexbridge.BungeePexBridge;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
-import javax.swing.*;
 import java.util.UUID;
 
 public class BanCommand extends Command {
@@ -38,7 +37,14 @@ public class BanCommand extends Command {
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Dieser Spieler existiert nicht."));
                         return;
                     }
-                    if (!reason.isCanSupBan()) {
+                    if (BungeePexBridge.get().hasPermission(uuid, "bungee.team", true) && !commandSender.hasPermission("bungee.ban.admin")) {
+                        if (reason.getReasonType() == Reason.ReasonType.BAN)
+                            commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du darfst diesen Spieler nicht bannen."));
+                        else
+                            commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du darfst diesen Spieler nicht muten."));
+                        return;
+                    }
+                    if (!reason.canSupBan()) {
                         if (commandSender.hasPermission("bungee.ban.all")) {
                             removeBan(reason, uuid);
                             ProxiedPlayer player = plugin.getProxy().getPlayer(uuid);
@@ -53,9 +59,14 @@ public class BanCommand extends Command {
                                 else
                                     plugin.getBanManager().banPlayerByConsole(player, reason);
                             }
-                            for(ProxiedPlayer all : plugin.getProxy().getPlayers())
-                                if(all.hasPermission("bungee.ban") || all.hasPermission("bungee.ban.all")) {
-
+                            for (ProxiedPlayer all : plugin.getProxy().getPlayers())
+                                if (all.hasPermission("bungee.ban") || all.hasPermission("bungee.ban.all")) {
+                                    if (reason.getReasonType() == Reason.ReasonType.BAN)
+                                        all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gebannt."));
+                                    else
+                                        all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7wurde gemutet."));
+                                    all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ Grund §b" + reason.getReason()));
+                                    all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ Länge §b" + plugin.getBanManager().getTimeAsString(plugin.getBanManager().secondsToArray(reason.getSeconds()))));
                                 }
                         } else
                             commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du darfst für diese ID nicht bannen."));
@@ -74,15 +85,17 @@ public class BanCommand extends Command {
         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /ban <Spieler> <ID>"));
         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Hier die Verfügbaren ID's"));
         for (Reason reason : plugin.getBanManager().getReasons()) {
-            if (!reason.isCanSupBan() && commandSender.hasPermission("bungee.ban.all"))
-                if (reason.getReasonType() == Reason.ReasonType.BAN)
-                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
+            if (!reason.canSupBan())
+                if (commandSender.hasPermission("bungee.ban.all"))
+                    if (reason.getReasonType() == Reason.ReasonType.BAN)
+                        commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
         }
         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Mutes"));
         for (Reason reason : plugin.getBanManager().getReasons()) {
-            if (!reason.isCanSupBan() && commandSender.hasPermission("bungee.ban.all"))
-                if (reason.getReasonType() == Reason.ReasonType.MUTE)
-                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
+            if (!reason.canSupBan())
+                if (commandSender.hasPermission("bungee.ban.all"))
+                    if (reason.getReasonType() == Reason.ReasonType.MUTE)
+                        commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ §b" + reason.getId() + " §8» §a" + reason.getReason()));
         }
     }
 
