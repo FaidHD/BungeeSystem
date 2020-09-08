@@ -79,14 +79,6 @@ public class BanManager {
         mySQL.update("CREATE TABLE IF NOT EXISTS history(PLAYERNAME VARCHAR(16), UUID VARCHAR(64), IPADDRESS VARCHAR(32), TYPE VARCHAR(8), ENDING VARCHAR(64), REASON VARCHAR(128), POINTS INT, JUDGE_NAME VARCHAR(16), JUDGE_UUID VARCHAR(64))");
     }
 
-    public Reason getReasonTemplate(String reasonName) {
-        for (Reason reason : reasons) {
-            if (reason.getReason() == reasonName.toUpperCase())
-                return reason;
-        }
-        return null;
-    }
-
     public Reason getReasonTemplate(int id) {
         for (Reason reason : reasons) {
             if (reason.getId() == id)
@@ -369,7 +361,7 @@ public class BanManager {
 
     public void checkBanPoints(UUID uuid) {
         if (getBanPoints(uuid) < 10) return;
-        if (getMuteReason(uuid).matches("ZU VIELE BANS")) return;
+        if (getBanReason(uuid).matches("ZU VIELE BANS")) return;
         unBan(uuid);
         banOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyBanPoints);
     }

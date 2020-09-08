@@ -31,6 +31,9 @@ public class BungeeSystem extends Plugin {
         new BroadcastCommand(this);
         new TeamchatCommand(this);
         new MaintenanceCommand(this);
+        new KickCommand(this);
+        new TempbanCommand(this);
+        new TempmuteCommand(this);
     }
 
     private void initListeners() {

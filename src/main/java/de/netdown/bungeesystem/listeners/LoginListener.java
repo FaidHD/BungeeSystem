@@ -40,10 +40,12 @@ public class LoginListener implements Listener {
         }
 
         if (plugin.getMaintenanceManager().isMaintenance()) {
-            if (!BungeePexBridge.get().hasPermission(uuid, "bungee.maintenance.join", true) && !BungeePexBridge.get().hasPermission(uuid, "bungee.maintenance", true)) {
-                if (!plugin.getMaintenanceManager().getWhitelist().contains(uuid.toString())) {
-                    event.setCancelReason(new TextComponent(plugin.getMaintenanceManager().getMaintenanceKick().replaceAll("&", "§")));
-                    event.setCancelled(true);
+            if (!BungeePexBridge.get().hasPermission(uuid, "bungee.maintenance.join", true)) {
+                if (!BungeePexBridge.get().hasPermission(uuid, "bungee.maintenance", true)) {
+                    if (!plugin.getMaintenanceManager().getWhitelist().contains(uuid.toString())) {
+                        event.setCancelReason(new TextComponent(plugin.getMaintenanceManager().getMaintenanceKick().replaceAll("&", "§")));
+                        event.setCancelled(true);
+                    }
                 }
             }
         }
