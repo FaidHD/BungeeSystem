@@ -29,7 +29,7 @@ public class TempmuteCommand extends Command {
                 if (args[2].equalsIgnoreCase("w") || args[2].equalsIgnoreCase("d") || args[2].equalsIgnoreCase("h") || args[2].equalsIgnoreCase("m") || args[2].equalsIgnoreCase("s")) {
                     try {
                         int time = getTimeAsSeconds(Integer.parseInt(args[1]), args[2]);
-                        if (time > 2592000)
+                        if (time > 2592000 && time != 0)
                             if (!commandSender.hasPermission("bungee.ban.all")) {
                                 commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du darfst nicht mehr als 30 Tage muten."));
                                 return;

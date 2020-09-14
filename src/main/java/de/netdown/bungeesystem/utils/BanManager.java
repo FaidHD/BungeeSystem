@@ -255,8 +255,19 @@ public class BanManager {
     public boolean isBanned(UUID uuid) {
         ResultSet rs = mySQL.query("SELECT * FROM bans WHERE UUID='" + uuid + "'");
         try {
-            if (rs.next())
+            if (rs.next()) {
+                long remainingTime = getRemainingBanTime(uuid);
+                if (remainingTime <= System.currentTimeMillis()) {
+                    if (remainingTime != 0) {
+                        unBan(uuid);
+                        for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
+                            if (all.hasPermission("bungee.ban"))
+                                all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + rs.getString("PLAYERNAME") + " §7wurde automatisch wegen Ablauf des Banns entbannt."));
+                        return false;
+                    }
+                }
                 return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -277,8 +288,19 @@ public class BanManager {
     public boolean isMuted(UUID uuid) {
         ResultSet rs = mySQL.query("SELECT * FROM mutes WHERE UUID='" + uuid + "'");
         try {
-            if (rs.next())
+            if (rs.next()) {
+                long remainingTime = getRemainingMuteTime(uuid);
+                if (remainingTime <= System.currentTimeMillis()) {
+                    if (remainingTime != 0) {
+                        unMute(uuid);
+                        for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
+                            if (all.hasPermission("bungee.ban"))
+                                all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + rs.getString("PLAYERNAME") + " §7wurde automatisch wegen Ablauf des Mutes entmutet."));
+                        return false;
+                    }
+                }
                 return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

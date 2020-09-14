@@ -22,8 +22,8 @@ public class KickCommand extends Command {
             if (args.length == 2) {
                 ProxiedPlayer player = plugin.getProxy().getPlayer(args[0]);
                 if (player != null) {
-                    player.disconnect(new TextComponent("§3Net§fDown §8● §7Netzwerk\n§cDu wurdest gekickt\n\n§8➥ §7Grund §8» §9" + args[1].replaceAll("&", "§") + "\n\n§7Teamspeak §8» §3Net§fDown.de"));
-                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + player.getName() + " für den Grund §b" + args[1].replaceAll("&", "§") + " §7gekickt."));
+                    player.disconnect(new TextComponent("§3Net§fDown §8● §cDu wurdest gekickt\n\n§8➥ §7Grund §8» §9" + args[1].replaceAll("&", "§") + "\n\n§7Teamspeak §8» §3Net§fDown.de"));
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + player.getName() + " §7für den Grund §b" + args[1].replaceAll("&", "§") + " §7gekickt."));
                 } else
                     commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7ist nicht online."));
             } else

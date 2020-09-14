@@ -25,15 +25,6 @@ public class ChatListener implements Listener {
         String msg = event.getMessage();
         if (msg.charAt(0) != '/' || msg.startsWith("/msg") || msg.startsWith("/tell") || msg.startsWith("/me") || msg.startsWith("/say"))
             if (plugin.getBanManager().isMuted(player.getUniqueId())) {
-                if (plugin.getBanManager().getRemainingMuteTime(player.getUniqueId()) <= System.currentTimeMillis()) {
-                    if (plugin.getBanManager().getRemainingMuteTime(player.getUniqueId()) != 0) {
-                        plugin.getBanManager().unMute(player.getUniqueId());
-                        for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
-                            if (all.hasPermission("bungee.ban"))
-                                all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + player.getName() + " §7wurde automatisch wegen Ablauf des Mutes entmutet."));
-                        return;
-                    }
-                }
                 event.setCancelled(true);
                 player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du bist wegen §b" + plugin.getBanManager().getMuteReason(player.getUniqueId()) + " §7gemutet."));
                 player.sendMessage(new TextComponent(plugin.getData().getPrefix() + "➥ Länge §8» " + plugin.getBanManager().getTimeAsString(plugin.getBanManager().getMuteTime(player.getUniqueId()))));
