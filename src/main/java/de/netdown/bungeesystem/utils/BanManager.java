@@ -1,7 +1,6 @@
 package de.netdown.bungeesystem.utils;
 
 import de.netdown.bungeesystem.BungeeSystem;
-import me.philipsnostrum.bungeepexbridge.BungeePexBridge;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -437,6 +436,10 @@ public class BanManager {
         banPlayer(playerName, uuid, null, reason.getSeconds(), reason.getReason(), "CONSOLE", "CONSOLE", reason.getPoints());
     }
 
+    /*
+     * LIMIT param for delete just one ban from history
+     *
+     */
     public void unBan(UUID uuid) {
         mySQL.update("DELETE FROM bans WHERE UUID='" + uuid.toString() + "'");
     }
