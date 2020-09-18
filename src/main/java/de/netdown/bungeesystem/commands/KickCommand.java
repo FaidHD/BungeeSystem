@@ -6,6 +6,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
+import javax.swing.*;
+
 public class KickCommand extends Command {
 
     private BungeeSystem plugin;
@@ -22,6 +24,7 @@ public class KickCommand extends Command {
             if (args.length == 2) {
                 ProxiedPlayer player = plugin.getProxy().getPlayer(args[0]);
                 if (player != null) {
+                    JOptionPane.showInputDialog("");
                     player.disconnect(new TextComponent("§3Net§fDown §8● §cDu wurdest gekickt\n\n§8➥ §7Grund §8» §9" + args[1].replaceAll("&", "§") + "\n\n§7Teamspeak §8» §3Net§fDown.de"));
                     commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + player.getName() + " §7für den Grund §b" + args[1].replaceAll("&", "§") + " §7gekickt."));
                 } else

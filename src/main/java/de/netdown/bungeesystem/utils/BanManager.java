@@ -75,7 +75,7 @@ public class BanManager {
         this.mySQL = new MySQL(cfg.getString("Hostname"), cfg.getString("Port"), cfg.getString("Database"), cfg.getString("Username"), cfg.getString("Password"), plugin);
         mySQL.update("CREATE TABLE IF NOT EXISTS bans(PLAYERNAME VARCHAR(16), UUID VARCHAR(64), IPADDRESS VARCHAR(32), ENDING VARCHAR(64), REASON VARCHAR(128), JUDGE_NAME VARCHAR(16), JUDGE_UUID VARCHAR(64))");
         mySQL.update("CREATE TABLE IF NOT EXISTS mutes(PLAYERNAME VARCHAR(16), UUID VARCHAR(64), IPADDRESS VARCHAR(32), ENDING VARCHAR(64), REASON VARCHAR(128), JUDGE_NAME VARCHAR(16), JUDGE_UUID VARCHAR(64))");
-        mySQL.update("CREATE TABLE IF NOT EXISTS history(PLAYERNAME VARCHAR(16), UUID VARCHAR(64), IPADDRESS VARCHAR(32), TYPE VARCHAR(8), ENDING VARCHAR(64), REASON VARCHAR(128), POINTS INT, JUDGE_NAME VARCHAR(16), JUDGE_UUID VARCHAR(64))");
+        mySQL.update("CREATE TABLE IF NOT EXISTS history(ID INT NOT NULL AUTO_INCREMENT, PLAYERNAME VARCHAR(16), UUID VARCHAR(64), IPADDRESS VARCHAR(32), TYPE VARCHAR(8), ENDING VARCHAR(64), REASON VARCHAR(128), POINTS INT, JUDGE_NAME VARCHAR(16), JUDGE_UUID VARCHAR(64))");
     }
 
     public Reason getReasonTemplate(int id) {
@@ -197,10 +197,11 @@ public class BanManager {
             try {
                 if (!rs.next()) break;
                 if (rs.getString("TYPE").matches("MUTE")) {
-                    String[] ban = new String[3];
+                    String[] ban = new String[4];
                     ban[0] = rs.getString("REASON");
                     ban[1] = rs.getString("POINTS");
                     ban[2] = rs.getString("JUDGE_NAME");
+                    ban[3] = String.valueOf(rs.getInt("ID"));
                     bans[i] = ban;
                     i++;
                 }
@@ -241,8 +242,6 @@ public class BanManager {
             days -= 7;
             weeks++;
         }
-
-
         time[0] = weeks;
         time[1] = days;
         time[2] = hours;
@@ -258,7 +257,7 @@ public class BanManager {
                 long remainingTime = getRemainingBanTime(uuid);
                 if (remainingTime <= System.currentTimeMillis()) {
                     if (remainingTime != 0) {
-                        unBan(uuid);
+                        unBan(uuid, false);
                         for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
                             if (all.hasPermission("bungee.ban"))
                                 all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + rs.getString("PLAYERNAME") + " §7wurde automatisch wegen Ablauf des Banns entbannt."));
@@ -291,7 +290,7 @@ public class BanManager {
                 long remainingTime = getRemainingMuteTime(uuid);
                 if (remainingTime <= System.currentTimeMillis()) {
                     if (remainingTime != 0) {
-                        unMute(uuid);
+                        unMute(uuid, false);
                         for (ProxiedPlayer all : ProxyServer.getInstance().getPlayers())
                             if (all.hasPermission("bungee.ban"))
                                 all.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + rs.getString("PLAYERNAME") + " §7wurde automatisch wegen Ablauf des Mutes entmutet."));
@@ -380,17 +379,29 @@ public class BanManager {
         return null;
     }
 
+    public int getBanID(UUID uuid, Reason.ReasonType reasonType) {
+        ResultSet rs = mySQL.query("SELECT * FROM history WHERE UUID='" + uuid.toString() + "'");
+        try {
+            if (rs.next())
+                if (rs.getString("TYPE").matches(reasonType.name()))
+                    return rs.getInt("ID");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     public void checkBanPoints(UUID uuid) {
         if (getBanPoints(uuid) < 10) return;
         if (getBanReason(uuid).matches("ZU VIELE BANS")) return;
-        unBan(uuid);
+        unBan(uuid, false);
         banOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyBanPoints);
     }
 
     public void checkMutePoints(UUID uuid) {
         if (getMutePoints(uuid) < 10) return;
         if (getMuteReason(uuid).matches("ZU VIELE MUTES")) return;
-        unMute(uuid);
+        unMute(uuid, false);
         if (ProxyServer.getInstance().getPlayer(uuid) == null)
             muteOfflinePlayerByConsole(UUIDFetcher.getName(uuid), toManyMutePoints);
         else
@@ -402,8 +413,8 @@ public class BanManager {
         long end = System.currentTimeMillis() + sec * 1000;
         if (seconds == 0)
             end = 0;
-        mySQL.update("INSERT INTO bans(PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         mySQL.update("INSERT INTO history(PLAYERNAME, UUID, IPADDRESS, TYPE, ENDING, REASON, POINTS, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', 'BAN', '" + end + "', '" + reason + "', '" + banPoints + "', '" + judgeName + "', '" + judgeUUID + "')");
+        mySQL.update("INSERT INTO bans(ID, PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + getBanID(uuid, Reason.ReasonType.BAN) + "', '" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         if (!reason.matches("RECHTSEXTREMISMUS") && !reason.matches("VIRTUELLES HAUSVERBOT"))
             checkBanPoints(uuid);
     }
@@ -440,8 +451,10 @@ public class BanManager {
      * LIMIT param for delete just one ban from history
      *
      */
-    public void unBan(UUID uuid) {
+    public void unBan(UUID uuid, boolean lastHistory) {
         mySQL.update("DELETE FROM bans WHERE UUID='" + uuid.toString() + "'");
+        if(lastHistory)
+            mySQL.update("DELETE FROM history WHERE UUID='" + uuid.toString() + "' AND TYPE='MUTE' LIMIT 1");
     }
 
     private void mutePlayer(String name, UUID uuid, String ip, int seconds, String reason, String judgeName, String judgeUUID, int mutePoints) {
@@ -449,8 +462,8 @@ public class BanManager {
         long end = System.currentTimeMillis() + sec * 1000;
         if (seconds == 0)
             end = 0;
-        mySQL.update("INSERT INTO mutes(PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         mySQL.update("INSERT INTO history(PLAYERNAME, UUID, IPADDRESS, TYPE, ENDING, REASON, POINTS, JUDGE_NAME, JUDGE_UUID) VALUES('" + name + "', '" + uuid + "', '" + ip + "', 'MUTE', '" + end + "', '" + reason + "', '" + mutePoints + "', '" + judgeName + "', '" + judgeUUID + "')");
+        mySQL.update("INSERT INTO mutes(ID, PLAYERNAME, UUID, IPADDRESS, ENDING, REASON, JUDGE_NAME, JUDGE_UUID) VALUES('" + getBanID(uuid, Reason.ReasonType.MUTE) + "', '" + name + "', '" + uuid + "', '" + ip + "', '" + end + "', '" + reason + "', '" + judgeName + "', '" + judgeUUID + "')");
         checkMutePoints(uuid);
     }
 
@@ -484,8 +497,10 @@ public class BanManager {
         mutePlayer(playerName, uuid, null, reason.getSeconds(), reason.getReason(), "CONSOLE", "CONSOLE", reason.getPoints());
     }
 
-    public void unMute(UUID uuid) {
+    public void unMute(UUID uuid, boolean lastHistory) {
         mySQL.update("DELETE FROM mutes WHERE UUID='" + uuid.toString() + "'");
+        if(lastHistory)
+            mySQL.update("DELETE FROM history WHERE UUID='" + uuid.toString() + "' AND TYPE='MUTE' LIMIT 1");
     }
 
     public String getIPFromPlayer(ProxiedPlayer player) {

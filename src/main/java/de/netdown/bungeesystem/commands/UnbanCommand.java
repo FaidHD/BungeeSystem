@@ -24,20 +24,27 @@ public class UnbanCommand extends Command {
     @Override
     public void execute(CommandSender commandSender, String[] args) {
         if (commandSender.hasPermission("bungee.unban")) {
-            if (args.length == 1) {
+            if (args.length == 2) {
                 BanManager manager = plugin.getBanManager();
                 UUID uuid = UUIDFetcher.getUUID(args[0]);
+                boolean lastHistory;
+                try {
+                    lastHistory = Boolean.valueOf(args[1]);
+                } catch (Exception e) {
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unban <Spieler> <true, false>"));
+                    return;
+                }
                 if (uuid != null) {
                     if (manager.isBanned(uuid)) {
-                        manager.unBan(uuid);
+                        manager.unBan(uuid, lastHistory);
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + args[0] + " §7entbannt."));
                     } else
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7ist nicht gebannt."));
                 } else
                     commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7existiert nicht."));
             } else
-                commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unban <Spieler>"));
-        }else
+                commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unban <Spieler> <true, false>"));
+        } else
             commandSender.sendMessage(new TextComponent(plugin.getData().getNoPerm()));
     }
 }

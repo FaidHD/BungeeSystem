@@ -23,19 +23,26 @@ public class UnmuteCommand extends Command {
     @Override
     public void execute(CommandSender commandSender, String[] args) {
         if (commandSender.hasPermission("bungee.unmute")) {
-            if (args.length == 1) {
+            if (args.length == 2) {
                 BanManager manager = plugin.getBanManager();
                 UUID uuid = UUIDFetcher.getUUID(args[0]);
+                boolean lastHistory;
+                try {
+                    lastHistory = Boolean.valueOf(args[1]);
+                } catch (Exception e) {
+                    commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unmute <Spieler> <true, false>"));
+                    return;
+                }
                 if (uuid != null) {
                     if (manager.isMuted(uuid)) {
-                        manager.unMute(uuid);
+                        manager.unMute(uuid, lastHistory);
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Du hast den Spieler §b" + args[0] + " §7entmutet."));
                     } else
                         commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7ist nicht gemutet."));
                 } else
                     commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Der Spieler §b" + args[0] + " §7existiert nicht."));
             } else
-                commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unmute <Spieler>"));
+                commandSender.sendMessage(new TextComponent(plugin.getData().getPrefix() + "Bitte benutze: /unmute <Spieler> <true, false>"));
         }else
             commandSender.sendMessage(new TextComponent(plugin.getData().getNoPerm()));
     }
